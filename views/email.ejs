@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="./stylesheets/style.css" />
+		<title>Email</title>
+	</head>
+	<body>
+		<div class="header">
+			<p>Dear Bpk/Ibu, <%= nasabah.name %></p>
+			<p>
+				Dengan email ini kami menyertakan penawaran produk <%= product.name %>
+			</p>
+			<h1 class="title">Penawaran Produk <%= product.name %></h1>
+			<p class="sub-title">
+				Dipersiapkan untuk nama tertanggung <%= nasabah.name %>
+			</p>
+		</div>
+		<div class="main">
+			<div class="main-table">
+				<div class="table-1">
+					<h1>Product Information</h1>
+					<table>
+						<tr>
+							<td>Product Name</td>
+							<td><%= product.name %></td>
+						</tr>
+						<tr>
+							<td>Plan</td>
+							<td><%= product.plan %></td>
+						</tr>
+						<tr>
+							<td>SA</td>
+							<td><%= product.sa %></td>
+						</tr>
+						<tr>
+							<td>Jenis Kelamin</td>
+							<td><%= nasabah.gender%></td>
+						</tr>
+						<tr>
+							<td>Umur</td>
+							<td><%= nasabah.umur%></td>
+						</tr>
+						<tr>
+							<td>Periode Pembayaran</td>
+							<td><%= product.periode%></td>
+						</tr>
+						<tr>
+							<td>Ketentuan Lain</td>
+							<td><%= product.kl%></td>
+						</tr>
+					</table>
+				</div>
+				<div class="table-2">
+					<h1>Benefits</h1>
+					<table>
+						<tr>
+							<td>Daily cash benefit</td>
+							<td><%= benefit.cash %></td>
+						</tr>
+						<tr>
+							<td>Death Benefit</td>
+							<td><%= benefit.death %></td>
+						</tr>
+						<tr>
+							<td>Return of Premi</td>
+							<td><%= benefit.premi %></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+
+			<div class="sub-table">
+				<div class="table-3">
+					<h1>Informasi Tertanggung</h1>
+					<table>
+						<tr>
+							<th>Polis</th>
+							<th>Nama</th>
+							<th>Jenis Kelamin</th>
+							<th>Tanggal Lahir</th>
+							<th>Umur</th>
+							<th>Relasi</th>
+							<th>No KTP</th>
+						</tr>
+						<tr>
+							<td>Polis</td>
+							<td>Nama</td>
+							<td>Jenis Kelamin</td>
+							<td>Tanggal Lahir</td>
+							<td>Umur</td>
+							<td>Relasi</td>
+							<td>No KTP</td>
+						</tr>
+					</table>
+				</div>
+				<div class="table-4">
+					<h1>Rincian Biaya</h1>
+					<table>
+						<tr>
+							<th>Rincian Biaya</th>
+							<th>Bulanan</th>
+							<th>Tahunan</th>
+						</tr>
+						<tr>
+							<td>Rincian Biaya</td>
+							<td>Bulanan</td>
+							<td>Tahunan</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

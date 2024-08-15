@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="../public/stylesheets/style.css" />
+		<title>Document</title>
+	</head>
+	<body>
+		<div class="header">
+			<p>Dear Bpk/Ibu, <%= nasabah.name %></p>
+			<p>
+				Dengan email ini kami menyertakan penawaran produk <%= product.name %>
+			</p>
+			<h1 class="title">Program Asuransi <%= product.name %></h1>
+			<p class="sub-title">Dipersiapkan untuk <%= nasabah.name %></p>
+		</div>
+		<div class="content">
+			<div class="table-1">
+				<h1 class="title-tab-1">Product Information</h1>
+				<table>
+					<tr>
+						<td>Product Name</td>
+						<td><%= product.name %></td>
+					</tr>
+					<tr>
+						<td>Plan</td>
+						<td><%= product.plan %></td>
+					</tr>
+					<tr>
+						<td>SA</td>
+						<td><%= product.sa %></td>
+					</tr>
+					<tr>
+						<td>Jenis Kelamin</td>
+						<td><%= nasabah.gender%></td>
+					</tr>
+					<tr>
+						<td>Umur</td>
+						<td><%= nasabah.umur%></td>
+					</tr>
+					<tr>
+						<td>Periode Pembayaran</td>
+						<td><%= product.periode%></td>
+					</tr>
+					<tr>
+						<td>Ketentuan Lain</td>
+						<td><%= product.kl%></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</body>
+</html>
