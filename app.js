@@ -4,9 +4,12 @@ var cookieParser = require("cookie-parser");
 var loggerd = require("morgan");
 const sendMail = require("./routes/mail");
 require("dotenv").config();
-const scheduleFileDeletion = require('./uploadCleanse'); // deletion job
-var app = express();
+const { scheduleFileDeletion } = require('./uploadCleanse'); // deletion job
+// const { deleteMostRecentFile } = require('./uploadCleanse'); // deletion job
 
+// const { responseVar } = require("./controllers/mail");
+
+var app = express();
 
 // me 
 const multer = require("multer");
@@ -22,9 +25,9 @@ const diskStorage = multer.diskStorage({
     }
 });
 
-const upload = multer({ 
+const upload = multer({
     storage: diskStorage // 10 mb
- });
+});
 
 app.use(loggerd("dev"));
 app.use(express.json());
@@ -41,6 +44,10 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 app.use("/sendmail", upload.array('attachments'), sendMail);
+
+// console.log("response is" + responseVar);
+
+
 
 scheduleFileDeletion();
 

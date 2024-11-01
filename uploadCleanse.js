@@ -2,6 +2,8 @@
 const fs = require('fs');
 const path = require('path');
 const cron = require('node-cron');
+const { responseVar } = require('./controllers/mail.js');
+const { response } = require('./app');
 
 // Directory you want to clean
 const folderPath = './uploads';
@@ -39,7 +41,7 @@ function deleteFilesInFolder(folder) {
           });
         }
       });
-    });po
+    });
   });
 }
 
@@ -53,4 +55,44 @@ function scheduleFileDeletion() {
   console.log('Cron job started: Deleting files older than 1 day every 10 PM');
 }
 
-module.exports = scheduleFileDeletion;
+
+// =====================================================================================
+// DELETION 2
+const deleteMostRecentFile = (directoryPath) => {
+  // Read all files in the directory
+  fs.readdir(directoryPath, (err, files) => {
+    if (err) {
+      console.error("Error reading directory:", err);
+      return;
+    }
+
+    if (files.length === 0) {
+      console.log("No files found in the directory.");
+      return;
+    }
+
+    // Get file details with stats for sorting by modification time
+    let mostRecentFile = files
+      .map(file => ({
+        file: file,
+        time: fs.statSync(path.join(directoryPath, file)).mtime.getTime()
+      }))
+      .sort((a, b) => b.time - a.time)[0]; // Sort by time, descending
+
+    const filePath = path.join(directoryPath, mostRecentFile.file);
+
+    // Delete the most recent file
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error("Error deleting file:", err);
+        return;
+      }
+      console.log(`Successfully deleted the most recent file: ${mostRecentFile.file}`);
+    });
+  });
+};
+
+
+
+
+module.exports = {scheduleFileDeletion, deleteMostRecentFile };

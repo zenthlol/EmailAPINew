@@ -6,7 +6,7 @@ const formats = printf(({ level, message }) => {
 	if (message.info === undefined) { //buat log kalo eror
 		// default
 		// return `${Date()} ${level.toUpperCase()}: ${message}`;
-
+		
 		// me
 		return `${Date()} ${level.toUpperCase()}: ${
 			message

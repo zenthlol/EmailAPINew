@@ -1,8 +1,9 @@
 const nodemailer = require("nodemailer");
-// const ejs = require("ejs");
-// const path = require("path");
 const logger = require("../loogging/logger");
 const cron = require('node-cron');
+const { response } = require("../app");
+const { deleteMostRecentFile } = require('../uploadCleanse'); // deletion job
+
 
 require("dotenv").config();
 
@@ -19,7 +20,7 @@ const transporter = nodemailer.createTransport({
 	logger: false,
 });
 
-
+let responseVar = null; // place holder for response
 
 const sendMail = (req, res) => {
 	// scheduler.schedule
@@ -28,7 +29,7 @@ const sendMail = (req, res) => {
 	let bcc = req.body.bcc;
 	const contentType = req.headers['content-type'];
 
-	console.log(contentType);
+	// console.log(contentType);
 	
 	const executionWithTryCatch = () => {
 		//try catch
@@ -40,6 +41,7 @@ const sendMail = (req, res) => {
 				email === null ||
 				email === undefined
 			) {
+				responseVar = 400;
 				res.status(400).json({ msg: "Kolom email harus diisi" });
 				throw new Error("Kolom Email tidak boleh kosong");
 			} 
@@ -51,6 +53,7 @@ const sendMail = (req, res) => {
 				subject === null ||
 				subject === undefined
 			) {
+				responseVar = 400;
 				res.status(400).json({ msg: "Subject email harus diisi" });
 				throw new Error("Untuk email kepada: " + req.body.email + ", Kolom Subject tidak boleh kosong");
 			}
@@ -62,51 +65,21 @@ const sendMail = (req, res) => {
 				html === null ||
 				html === undefined
 			) {
+				responseVar = 400;
 				res.status(400).json({ msg: "Body email tidak boleh kosong" });
 				throw new Error("Untuk email kepada: " + req.body.email + ", Tidak ada data yang di kirim");
 				
 			}
 
-			// HTML 
-			// else if (
-			// 	schedule === undefined
-			// ) {
-			// 	// res.status(400).json({ msg: "Body email tidak boleh kosong" });
-			// 	throw new Error("Untuk email kepada: " + req.body.email + ", Schedule harus berisikan 5 angka dalam format : 0 0 0 0 0 (menit jam hari bulan minggu");
-				
-			// }
-
-			// Filename Attachments
-			// else if (
-			// 	filename === " " ||
-			// 	filename === undefined
-			// ) {
-			// 	throw new Error("Filename Attachments tidak valid");
-			// 	// res.status(400).json({ msg: "Body email tidak boleh kosong" });
-			// }
-
-			// Path Attachments
-			// else if (
-			// 	path === " " ||
-			// 	path === undefined
-			// ) {
-			// 	throw new Error("Path Attachments tidak valid");
-			// 	// res.status(400).json({ msg: "Body email tidak boleh kosong" });
-			// }
-
-			// email validasi tidak dipakai karena mau enable multiple email recipient
-			// const emailValidation = validator.isEmail(email);
-
-
 			// HTML VALIDATION
 			const containsHTML = /<[a-z][\s\S]*>/i.test(html);
 
 			if (!containsHTML) {
+				responseVar = 400;
 				return res.status(400).json({ msg: "Invalid input: content bukan html" });
 			}
 
 			// SUBJECT VALIDATION
-			// const subjectValidation = /^[a-zA-Z0-9 ]+$/.test(subject);
 			let subjectValidation = true;
 
 			if (subject === null || subject === undefined || subject === " ") {
@@ -114,12 +87,12 @@ const sendMail = (req, res) => {
 			}
 
 			if (!subjectValidation) {
+				responseVar = 400;
 				return res
 					.status(400)
 					.json({ msg: "Invalid input: Subject tidak valid" });
 			}
 
-			// console.log(email);
 
 			// EMAIL VALIDATION
 			const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -144,18 +117,23 @@ const sendMail = (req, res) => {
 			});
 
 			if (emailValidation == false) {
+				responseVar = 400;
 				return res
 					.status(400)
 					.json({ msg: "Invalid input: format email salah" });
 			}
-			// console.log(cc);
+			
+			
+			if (cc == ""){
+				console.log("cc is empty");
+			}
 
 			//CC VALIDATION
-			if (cc !== undefined) {
+			if (cc !== undefined && cc !== "" && cc !== null) {
 				let ccValidation = true;
 				const ccString = cc;
 
-
+				console.log("hi");
 				let ccs;
 				if(contentType.startsWith("multipart/form-data")){
 					ccs = ccString.split(',').map(cc => cc.trim());
@@ -172,6 +150,7 @@ const sendMail = (req, res) => {
 				});
 
 				if (!ccValidation) {
+					responseVar = 400;
 					return res
 						.status(400)
 						.json({ msg: "Invalid input: format CC salah" });
@@ -180,7 +159,7 @@ const sendMail = (req, res) => {
 			
 
 			// BCC VALIDATION
-			if (bcc !== undefined) {
+			if (bcc !== undefined && bcc !== "" && bcc !== null) {
 				let bccValidation = true;
 				const bccString = bcc;
 
@@ -200,6 +179,7 @@ const sendMail = (req, res) => {
 				});
 
 				if (!bccValidation) {
+					responseVar = 400;
 					return res
 						.status(400)
 						.json({ msg: "Invalid input: format BCC salah" });
@@ -210,30 +190,11 @@ const sendMail = (req, res) => {
 
 			
 
-			// if (!emailValidation) {
-			// 	return res
-			// 		.status(400)
-			// 		.json({ msg: "Invalid input: Format email tidak valid" });
-
-			// }
-			// else{
-			// 	return res.json{{ msg2: "email valid" }};
-			// }
-			// if (!ccValidation) {
-			// 	return res
-			// 		.status(400)
-			// 		.json({ msg: "Invalid input: Format cc tidak valid" });
-			// }
-
-			// validasi buat kalo mau ngewajibin ada file yang di attach. kalo ngga remove.
-			// if (!req.files || req.files.length === 0) {
-			// 	return res.status(400).json({ message: 'No files uploaded!' });
-			// }
 
 			// PUSH ATTACHMENTS & MAX SIZE VALIDATION
 			const attachments = [];
 
-			if (req.files !== undefined){
+			if (req.files !== undefined && req.files !== null){
 				for (const file of req.files) {
 					attachments.push({
 						filename: file.originalname,
@@ -247,18 +208,12 @@ const sendMail = (req, res) => {
 				});
 				
 				if (totalSize > 10 * 1024 * 1024) {
+					responseVar = 400;
 					res.status(400).send({ msg: 'Ukuran file attachment melebihi 10 MB' });
 					throw new Error("Ukuran file attachment melebihi 10 MB");
 				}
 			}
 
-			// console.log("Attachments:");
-			// attachments.forEach((attachment) => {
-			// 	console.log(`  - ${attachment.filename} at ${attachment.path}`);
-			// });
-
-			// console.log(attachments);
-			
 			if (cc !== undefined) {
 				cc = cc;
 			} else{
@@ -272,7 +227,7 @@ const sendMail = (req, res) => {
 			}
 
 			const content = {
-				from: '"SOLADESK" <noreply-callbacksoladesk@bca.co.id>',
+				from: 'noreply-halobca@bca.co.id',
 
 				to: req.body.email,
 
@@ -285,20 +240,9 @@ const sendMail = (req, res) => {
 				html: req.body.html,
 
 				attachments: attachments
-
-				// attachments : req.body.attachments
-				
-				// attachments: [
-				// 	{
-				// 	  filename: req.file.originalname,
-				// 	  path: req.file.path
-				// 	}
-				//   ]
 			};
 
 			
-			
-
 			// NO SCHEDULE
 			if (schedule == undefined || schedule == null) { //jika sender tidak menjadwalkan email
 				//langsung kirim data email
@@ -318,12 +262,14 @@ const sendMail = (req, res) => {
 									// if (err.responseCode === undefined) {
 									// 	throw new Error("Data tidak valid");
 									// }
-									// console.log(err.responseCode);
+								z	// console.log(err.responseCode);
 		
 									logger.error(err);
 									if (err.responseCode === undefined) {
+										responseVar = 400;
 										return res.status(400).json(err);
 									} else {
+										responseVar = 400;
 										return res.status(err.responseCode).json(err);
 									}
 									
@@ -332,6 +278,7 @@ const sendMail = (req, res) => {
 										info: info,
 									};		
 									logger.info(response);
+									responseVar = 200;
 									return res.status(200).json(response);
 								}
 							});
@@ -350,8 +297,9 @@ const sendMail = (req, res) => {
 				if (!scheduleRegex.test(scheduleString)) {
 					scheduleValidation = false;
 				}
-
+				
 				if (scheduleValidation == false) {
+					responseVar = 400;
 					return res
 						.status(400)
 						.json({ msg: "Invalid input: format schedule salah" });
@@ -375,15 +323,12 @@ const sendMail = (req, res) => {
 			
 								const mailInfo = transporter.sendMail(content, (err, info) => {
 									if (err) {
-										// if (err.responseCode === undefined) {
-										// 	throw new Error("Data tidak valid");
-										// }
-										// console.log(err.responseCode);
-
 										logger.error(err);
 										if (err.responseCode === undefined) {
+											responseVar = 400;
 											return res.status(400).json(err);
 										} else {
+											responseVar = res.status(err.responseCode);
 											return res.status(err.responseCode).json(err);
 										}
 										
@@ -392,6 +337,7 @@ const sendMail = (req, res) => {
 											info: info,
 										};		
 										logger.info(response);
+										responseVar = 200;
 										return res.status(200).json(response);
 									}
 								});
@@ -399,16 +345,9 @@ const sendMail = (req, res) => {
 						});
 						console.log("SCHEDULED EMAIL SENT: at " + schedule + " !")
 					})
-					// masih eror
 					
-					// let response = {
-					// 	info: info,
-					// };
-					// return res.status(200).json(response);
-
-
+					responseVar = 200;
 					return res.status(200).json({
-						msg: "Email telah dijadwalkan pada waktu " + schedule,
 						info: {
 						  accepted: [
 							req.body.email, cc, bcc
@@ -417,7 +356,7 @@ const sendMail = (req, res) => {
 						  envelopeTime: 0,
 						  messageTime: 0,
 						  messageSize: 0,
-						  response: "0",
+						  response: "Email telah dijadwalkan pada waktu " + schedule,
 						  envelope: {
 							from: "noreply-callbacksoladesk@bca.co.id",
 							to: [
@@ -427,67 +366,27 @@ const sendMail = (req, res) => {
 						  messageId: "0"
 						}
 					  });
-
-				
 				}
 			}
 
-			
-			
-		
-			
-			
-
-			
 		} catch (error) {
 			logger.error(error);
 			console.log
+			responseVar = 400;
 			return res.status(400).json({ msg: error });
 		}
 		// const paths = path.join(__dirname, "..", "views", "email.ejs");
+
+
+		// Code to Execute File Deletion in Uploads Folder for Failed Requests
+		console.log("response var is " + responseVar);
+		if(responseVar != 200){
+			const directoryPath = './uploads';
+			deleteMostRecentFile(directoryPath);
+		}
 	}
-
-	// if (schedule == undefined || schedule == null) { //jika sender tidak menjadwalkan email
-	// 	executionWithTryCatch();
-	// }
-
-	// else{
-		// SCHEDULE VALIDATION
-	// 	const scheduleRegex =  /^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])|\*\/([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])|\*\/([1-9]|1[0-2])) (\*|([0-6])|\*\/([0-6]))$/;
-		
-	// 	let scheduleValidation = true;
-	// 	const scheduleString = schedule;
-
-	// 	if (!scheduleRegex.test(scheduleString)) {
-	// 		scheduleValidation = false;
-	// 	}
-
-	// 	if (scheduleValidation == false) {
-	// 		return res
-	// 			.status(400)
-	// 			.json({ msg: "Invalid input: format schedule salah" });
-	// 	}
-	// 	else{
-	// 		console.log('Trying to schedule an email at ' + schedule + '  || minute hour date month day-of-week');
-			
-	// 		cron.schedule(schedule, () => {
-	// 			executionWithTryCatch();
-	// 			console.log("scheduled email sent!")
-	// 		})
-
-	// 		// return res.status(200).json({msg: "Email telah dijadwalkan pada waktu " + schedule});
-
-	// 		// let response = {
-	// 		// 	info: info,
-	// 		// };
-	// 		// logger.info(response);
-	// 		// return res.status(200).json(response);
-	// 	}
-	// }
 	executionWithTryCatch();
-
-	
 };
 
 // todo: create send mail
-module.exports = sendMail;
+module.exports = { sendMail, responseVar };

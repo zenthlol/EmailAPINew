@@ -4,6 +4,8 @@
  * Module dependencies.
  */
 
+// const { responseVar } = require("../controllers/mail");
+
 var app = require("../app");
 var debug = require("debug")("emailapi:server");
 var http = require("http");
@@ -17,6 +19,7 @@ var port = normalizePort(process.env.PORT || "3001");
 app.set("port", port);
 // app.set("hostname", hostname);
 console.log(`Listening on ${port}`);
+// console.log("response is " + responseVar);
 
 /**
  * Create HTTP server.
